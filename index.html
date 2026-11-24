@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXTRON - IP & WiFi Diagnostics Toolkit v2.0.0</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--panel:#171717;--panel2:#222;--edge:#333;--txt:#e8e8e8;--mut:#a8a8a8;--btn:#f2f2f2;--btnT:#111;--ok:#4ade80;--bad:#f87171;--warn:#facc15}
+body{background:radial-gradient(1200px 600px at 50% -10%,#1c1c1c,#050505);color:var(--txt);font-family:Inter,system-ui,Arial,sans-serif;min-height:100vh;padding-bottom:84px}
+body.compact .card{padding:10px} body.noanim *{transition:none!important;animation:none!important}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(#1e1e1e,#111);border-bottom:1px solid #2a2a2a;box-shadow:0 10px 30px rgba(0,0,0,.6);padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:900;letter-spacing:.18em;font-size:20px}.logo span{color:#fff;background:#2e2e2e;border:1px solid #444;padding:2px 8px;border-radius:6px;margin-left:6px;font-size:11px;letter-spacing:.08em}
+.sub{font-size:11px;color:var(--mut);letter-spacing:.12em}
+.pill{background:#1f1f1f;border:1px solid #333;padding:7px 10px;border-radius:20px;font-size:12px;box-shadow:inset 0 1px 0 #333,0 4px 10px rgba(0,0,0,.5)}
+.wrap{max-width:1180px;margin:0 auto;padding:14px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.card{background:linear-gradient(145deg,#1d1d1d,#121212);border:1px solid #2f2f2f;border-radius:14px;padding:14px;box-shadow:0 12px 24px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);position:relative}
+.card:before{content:"";position:absolute;inset:0;border-radius:14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);pointer-events:none}
+.s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}.s3{grid-column:span 3}
+h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;color:#fff} h3{font-size:13px;margin:10px 0 6px}
+.mut{color:var(--mut);font-size:12px;line-height:1.5}.big{font-size:22px;font-weight:800;word-break:break-all}.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all;white-space:pre-wrap}
+label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);display:block;margin:8px 0 4px}
+input,select,textarea{width:100%;background:#0f0f0f;color:#fff;border:1px solid #333;border-radius:9px;padding:10px;outline:none;box-shadow:inset 0 2px 6px rgba(0,0,0,.7)} input:focus,textarea:focus{border-color:#666}
+.btn{background:linear-gradient(#ffffff,#d9d9d9);color:var(--btnT);border:1px solid #bbb;border-radius:9px;padding:10px 13px;font-weight:800;cursor:pointer;box-shadow:0 5px 0 #9a9a9a,0 10px 18px rgba(0,0,0,.5);transition:.12s;text-transform:uppercase;letter-spacing:.06em;font-size:12px}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #9a9a9a}.btn.dark{background:linear-gradient(#333,#1a1a1a);color:#fff;border-color:#444;box-shadow:0 5px 0 #000,0 10px 18px rgba(0,0,0,.5)}.btn.small{padding:7px 9px;font-size:11px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.row .btn{flex:0 0 auto}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;border:1px solid #333;background:#111}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid #2a2a2a;padding:7px;text-align:left}th{background:#1c1c1c}
+pre{background:#0b0b0b;border:1px solid #2a2a2a;border-radius:10px;padding:10px;overflow:auto;max-height:300px;font-size:12px}
+.nav{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(#202020,#0f0f0f);border-top:1px solid #333;display:flex;overflow-x:auto;z-index:30;box-shadow:0 -10px 30px rgba(0,0,0,.6)}
+.nav button{flex:1;min-width:86px;background:none;border:none;color:#bbb;padding:11px 6px;font-size:11px;cursor:pointer;border-right:1px solid #222}.nav button.on{background:#f2f2f2;color:#000;font-weight:900}
+section{display:none}section.on{display:block;animation:up .25s ease}@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:#fff;color:#000;padding:9px 14px;border-radius:20px;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.6);display:none;z-index:50}
+.progress{height:10px;background:#111;border:1px solid #333;border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#888,#fff);transition:.2s}
+.kv{display:grid;grid-template-columns:1fr 1.2fr;gap:6px;font-size:12px}.kv b{color:var(--mut);font-weight:600}
+@media(max-width:820px){.s4,.s6,.s8,.s3{grid-column:span 12}header{flex-direction:column;align-items:flex-start;gap:8px}}
+</style>
+</head>
+<body>
+<header>
+<div><div class="logo">NEXTRON <span>v2.0.0 STABLE</span></div><div class="sub">ULTIMATE IP & WIFI NETWORK DIAGNOSTICS TOOLKIT • DEVELOPER: SUKIMAN</div></div>
+<div class="row" style="flex:0 0 auto"><span class="pill" id="netPill">Checking...</span><button class="btn small" onclick="refreshDash()">Refresh</button></div>
+</header>
+
+<div class="wrap">
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="on"><div class="grid">
+<div class="card s8"><h2>Main Control Dashboard</h2><div class="kv" id="dashKv"></div><div class="mut" id="dashTime" style="margin-top:8px"></div></div>
+<div class="card s4"><h2>Network Health</h2><div id="health" class="big">-</div><div class="mut" id="healthTxt">Run diagnostics for detail.</div><div class="row" style="margin-top:10px"><button class="btn small" onclick="go('scanner')">Diagnostics</button><button class="btn small dark" onclick="go('speed')">Speed Test</button></div></div>
+<div class="card s4"><h2>Public IP</h2><div class="big" id="pubIp">Loading...</div><div class="mut" id="pubInfo"></div></div>
+<div class="card s4"><h2>Connection</h2><div class="kv" id="connKv"></div></div>
+<div class="card s4"><h2>Quick Tools</h2><div class="row"><button class="btn small" onclick="go('subnet')">Subnet</button><button class="btn small" onclick="go('dns')">DNS</button><button class="btn small" onclick="go('domain')">Domain</button></div><div class="row" style="margin-top:6px"><button class="btn small dark" onclick="go('ip')">IP Toolkit</button><button class="btn small dark" onclick="go('dev')">Dev Tools</button></div></div>
+<div class="card s12"><h2>Recent Diagnostic Activities</h2><div id="recent" class="mut">No history yet.</div></div>
+</div></section>
+
+<!-- IP TOOLKIT -->
+<section id="ip"><div class="grid">
+<div class="card s6"><h2>IPv4 Toolkit</h2><label>IPv4 Address</label><input id="ipv4" value="192.168.1.10"><div class="row" style="margin-top:8px"><button class="btn small" onclick="analyzeIPv4()">Analyze</button><button class="btn small dark" onclick="copyText(document.getElementById('ipv4').value)">Copy</button></div><pre id="ipv4Out">Enter IP and analyze.</pre></div>
+<div class="card s6"><h2>IPv6 Toolkit</h2><label>IPv6 Address</label><input id="ipv6" value="2001:0db8:0000:0000:0000:ff00:0042:8329"><div class="row" style="margin-top:8px"><button class="btn small" onclick="analyzeIPv6()">Analyze</button><button class="btn small dark" onclick="expandIPv6()">Expand</button></div><pre id="ipv6Out">Enter IPv6.</pre></div>
+<div class="card s6"><h2>IP Lookup (Online)</h2><label>IP / Domain</label><input id="lookup" placeholder="8.8.8.8 or google.com"><button class="btn small" style="margin-top:8px" onclick="lookupIP()">Lookup</button><pre id="lookupOut">Requires internet.</pre></div>
+<div class="card s6"><h2>Converters</h2><label>Decimal IP (e.g. 3232235777)</label><input id="decIp" value="3232235777"><div class="row" style="margin-top:8px"><button class="btn small" onclick="decToIp()">Convert</button><button class="btn small dark" onclick="ipToDec()">IP to Decimal</button></div><pre id="convOut"></pre></div>
+</div></section>
+
+<!-- WIFI -->
+<section id="wifi"><div class="grid"><div class="card s6"><h2>WiFi Information Center</h2><div class="kv" id="wifiKv"></div><div class="mut" style="margin-top:8px">Browser security blocks direct SSID/BSSID/signal access on most platforms. NEXTRON shows only real browser-accessible data and never fabricates hardware values.</div></div>
+<div class="card s6"><h2>Troubleshooting Assistant</h2><label>Problem</label><select id="wifiProb"><option>Cannot connect to WiFi</option><option>WiFi connected but no internet</option><option>Slow WiFi</option><option>Frequent disconnect</option></select><button class="btn small" style="margin-top:8px" onclick="wifiFix()">Get Steps</button><pre id="wifiFixOut"></pre></div>
+<div class="card s12"><h2>Manual Diagnostic Alternatives</h2><div class="mut">Android: Settings &gt; Network &gt; WiFi &gt; tap network for signal/frequency. Windows: <span class="mono">netsh wlan show interfaces</span>. Router admin usually at 192.168.0.1 or 192.168.1.1. Check distance, band 2.4/5GHz, channel congestion, and ISP outage.</div></div></div></section>
+
+<!-- SCANNER / DIAGNOSTICS -->
+<section id="scanner"><div class="grid"><div class="card s6"><h2>Network Diagnostics Engine</h2><label>Hostname / URL</label><input id="diagHost" value="https://www.google.com"><div class="row" style="margin-top:8px"><button class="btn small" onclick="runDiag()">Run Test</button><button class="btn small dark" onclick="checkOnline()">Connectivity</button></div><div class="progress" style="margin-top:10px"><i id="diagBar"></i></div><pre id="diagOut">Ready.</pre></div>
+<div class="card s6"><h2>Validators</h2><label>Hostname</label><input id="hostIn" value="www.example.com"><label>URL</label><input id="urlIn" value="https://example.com/path?q=1"><div class="row" style="margin-top:8px"><button class="btn small" onclick="validateHosts()">Validate</button></div><pre id="valOut"></pre></div></div></section>
+
+<!-- SPEED -->
+<section id="speed"><div class="grid"><div class="card s6"><h2>Network Performance Lab</h2><div class="mut">Uses accessible endpoints. Results are estimates. Cancel anytime.</div><div class="progress" style="margin:10px 0"><i id="speedBar"></i></div><div class="row"><button class="btn small" onclick="speedTest()">Start Test</button><button class="btn small dark" onclick="cancelSpeed()">Cancel</button></div><pre id="speedOut">Not tested yet.</pre></div>
+<div class="card s6"><h2>Latency Test</h2><button class="btn small" onclick="latencyTest()">Measure Latency</button><pre id="latOut">-</pre><h3>History</h3><div id="speedHist" class="mut"></div></div></div></section>
+
+<!-- DNS -->
+<section id="dns"><div class="grid"><div class="card s6"><h2>DNS Toolkit (DoH - Cloudflare)</h2><label>Domain</label><input id="dnsDomain" value="google.com"><label>Record Type</label><select id="dnsType"><option>A</option><option>AAAA</option><option>MX</option><option>TXT</option><option>NS</option><option>CNAME</option></select><button class="btn small" style="margin-top:8px" onclick="dnsLookup()">Lookup DNS</button><pre id="dnsOut">Requires internet.</pre></div>
+<div class="card s6"><h2>DNS Reference</h2><table><tr><th>Type</th><th>Use</th></tr><tr><td>A</td><td>Domain to IPv4</td></tr><tr><td>AAAA</td><td>Domain to IPv6</td></tr><tr><td>MX</td><td>Mail server</td></tr><tr><td>TXT</td><td>Text / verification</td></tr><tr><td>NS</td><td>Nameserver</td></tr><tr><td>CNAME</td><td>Alias</td></tr></table></div></div></section>
+
+<!-- DOMAIN -->
+<section id="domain"><div class="grid"><div class="card s6"><h2>Domain & Website Analyzer</h2><label>URL</label><input id="domUrl" value="https://www.google.com/search?q=test"><div class="row" style="margin-top:8px"><button class="btn small" onclick="analyzeDomain()">Analyze</button><button class="btn small dark" onclick="checkSite()">Availability</button></div><pre id="domOut"></pre></div>
+<div class="card s6"><h2>URL Tools</h2><label>Text</label><textarea id="urlText" rows="3">hello world? a=1&b=2</textarea><div class="row" style="margin-top:8px"><button class="btn small" onclick="urlEnc()">Encode</button><button class="btn small dark" onclick="urlDec()">Decode</button></div><pre id="urlToolOut"></pre></div></div></section>
+
+<!-- SUBNET -->
+<section id="subnet"><div class="grid"><div class="card s6"><h2>Professional Subnet Calculator</h2><label>IPv4</label><input id="subIp" value="192.168.1.130"><label>CIDR Prefix (/0 - /32)</label><input id="subCidr" type="number" value="24"><div class="row" style="margin-top:8px"><button class="btn small" onclick="calcSubnet()">Calculate</button><button class="btn small dark" onclick="clearSubnet()">Clear</button></div><pre id="subOut"></pre></div>
+<div class="card s6"><h2>CIDR Reference</h2><table id="cidrTable"></table></div></div></section>
+
+<!-- SECURITY -->
+<section id="security"><div class="grid"><div class="card s6"><h2>Security & Privacy Center</h2><label>URL to check</label><input id="secUrl" value="https://www.google.com"><button class="btn small" style="margin-top:8px" onclick="secCheck()">Check HTTPS</button><pre id="secOut"></pre></div>
+<div class="card s6"><h2>Local Security Checklist</h2><div id="secList" class="mut"></div><button class="btn small" style="margin-top:8px" onclick="secListFn()">Refresh Checklist</button></div></div></section>
+
+<!-- DEV TOOLS -->
+<section id="dev"><div class="grid">
+<div class="card s6"><h2>Converters</h2><label>Input</label><input id="devIn" value="Hello NEXTRON 123"><div class="row" style="margin-top:8px"><button class="btn small" onclick="devRun('b64e')">Base64 Enc</button><button class="btn small" onclick="devRun('b64d')">Base64 Dec</button><button class="btn small dark" onclick="devRun('hex')">Hex</button><button class="btn small dark" onclick="devRun('bin')">Binary</button></div><pre id="devOut"></pre></div>
+<div class="card s6"><h2>JSON / Hash / UUID</h2><textarea id="jsonIn" rows="4">{"name":"NEXTRON","version":"2.0.0"}</textarea><div class="row" style="margin-top:8px"><button class="btn small" onclick="jsonFmt()">Format JSON</button><button class="btn small" onclick="sha256Fn()">SHA-256</button><button class="btn small dark" onclick="uuidFn()">UUID</button></div><pre id="jsonOut"></pre></div>
+<div class="card s6"><h2>Timestamp / MAC / Text</h2><label>Unix Timestamp</label><input id="tsIn" value="1700000000"><label>MAC</label><input id="macIn" value="AA:BB:CC:DD:EE:FF"><div class="row" style="margin-top:8px"><button class="btn small" onclick="tsConv()">Convert TS</button><button class="btn small dark" onclick="macVal()">Validate MAC</button></div><pre id="tsOut"></pre></div>
+<div class="card s6"><h2>References</h2><label>Search Term</label><input id="dictQ" placeholder="subnet, dns, http 404..."><button class="btn small" style="margin-top:8px" onclick="dictSearch()">Search</button><pre id="dictOut">Dictionary, CIDR, HTTP status available offline.</pre></div>
+</div></section>
+
+<!-- HISTORY -->
+<section id="history"><div class="grid"><div class="card s12"><h2>Network History Database (localStorage)</h2><div class="row"><input id="histQ" placeholder="Search history..."><select id="histF" style="flex:0 0 160px"><option value="">All</option><option>IP</option><option>DNS</option><option>DIAG</option><option>SPEED</option><option>SUBNET</option></select><button class="btn small" onclick="renderHist()">Search</button></div><div class="row" style="margin-top:8px"><button class="btn small" onclick="exportHist()">Export JSON</button><button class="btn small dark" onclick="document.getElementById('imp').click()">Import JSON</button><input type="file" id="imp" accept=".json" style="display:none" onchange="importHist(event)"><button class="btn small dark" onclick="clearHist()">Clear All</button></div><div id="histList" style="margin-top:10px"></div></div></div></section>
+
+<!-- SETTINGS -->
+<section id="settings"><div class="grid"><div class="card s6"><h2>Settings Center</h2><label><input type="checkbox" id="setAnim" style="width:auto"> Enable Animations</label><label><input type="checkbox" id="setCompact" style="width:auto"> Compact Mode</label><label><input type="checkbox" id="setSound" style="width:auto"> Sound (disabled by default, visual only)</label><button class="btn small" style="margin-top:8px" onclick="saveSettings()">Save Settings</button><button class="btn small dark" onclick="resetSettings()">Reset Settings</button><pre id="setOut"></pre></div>
+<div class="card s6"><h2>Storage Information</h2><pre id="storageOut"></pre><button class="btn small" onclick="storageInfo()">Check Storage</button></div></div></section>
+
+<!-- ABOUT -->
+<section id="about"><div class="grid"><div class="card s12"><h2>About NEXTRON</h2><div class="kv"><b>Application</b><span>NEXTRON Network Toolkit</span><b>Version</b><span>2.0.0</span><b>Build</b><span>Stable</span><b>Developer</b><span>SUKIMAN</span><b>Category</b><span>Network Diagnostics</span><b>Platform</b><span>HTML5 / CSS3 / JavaScript</span><b>Architecture</b><span>Single-File Application</span></div><p class="mut" style="margin-top:10px">NEXTRON combines accurate IP calculations, practical browser-based diagnostics, DNS-over-HTTPS lookups, subnet engineering, developer utilities, and offline-first tools in one premium 3D interface. Online features clearly indicate internet dependency. No fabricated scan results are shown.</p></div></div></section>
+
+</div>
+
+<nav class="nav" id="nav"></nav><div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const sections=[["dashboard","Dashboard"],["ip","IP Toolkit"],["wifi","WiFi Center"],["scanner","Network Scanner"],["speed","Speed Test"],["dns","DNS Toolkit"],["domain","Domain Analyzer"],["subnet","Subnet Calculator"],["security","Security Center"],["dev","Developer Tools"],["history","History"],["settings","Settings"],["about","About"]];
+let nav=$('nav'); sections.forEach(([id,label])=>{let b=document.createElement('button');b.textContent=label;b.onclick=()=>go(id);b.dataset.id=id;nav.appendChild(b)});
+function go(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));window.scrollTo({top:0,behavior:'smooth'});if(id==='history')renderHist();if(id==='settings')storageInfo()}
+function toast(m){let t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',1800)}
+async function copyText(t){try{await navigator.clipboard.writeText(t);toast('Copied')}catch(e){let ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied')}}
+function saveHist(cat,summary,data){try{let h=JSON.parse(localStorage.getItem('nextron_hist')||'[]');h.unshift({id:Date.now(),cat,summary,data,time:new Date().toISOString()});h=h.slice(0,200);localStorage.setItem('nextron_hist',JSON.stringify(h))}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+/* IP utils */
+function parseIPv4(ip){let p=ip.trim().split('.');if(p.length!==4)return null;let n=p.map(x=>{if(!/^\d+$/.test(x))return NaN;let v=+x;return v>=0&&v<=255?v:NaN});return n.some(isNaN)?null:n}
+function ipToInt(a){return ((a[0]<<24)>>>0)+(a[1]<<16)+(a[2]<<8)+a[3]}
+function intToIp(n){return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.')}
+function maskFromCidr(c){return c===0?0:(0xFFFFFFFF<< (32-c))>>>0}
+function isPrivate(a){return a[0]===10||(a[0]===172&&a[1]>=16&&a[1]<=31)||(a[0]===192&&a[1]===168)}
+function ipClass(a){if(a[0]<128)return 'A';if(a[0]<192)return 'B';if(a[0]<224)return 'C';if(a[0]<240)return 'D Multicast';return 'E Reserved'}
+function analyzeIPv4(){let ip=$('ipv4').value;let a=parseIPv4(ip);if(!a){$('ipv4Out').textContent='Invalid IPv4';return}let dec=ipToInt(a);let hex=a.map(x=>x.toString(16).padStart(2,'0')).join('.');let bin=a.map(x=>x.toString(2).padStart(8,'0')).join('.');let out=`Valid: Yes\nClass: ${ipClass(a)}\nPrivate: ${isPrivate(a)}\nDecimal: ${dec}\nHex: ${hex}\nBinary: ${bin}\nType: ${isPrivate(a)?'Private':'Public / Special check required'}`;$('ipv4Out').textContent=out;saveHist('IP','IPv4 '+ip,out)}
+function decToIp(){let n=+$('decIp').value;if(isNaN(n)||n<0||n>4294967295){$('convOut').textContent='Invalid decimal';return}$('convOut').textContent=intToIp(n>>>0)}
+function ipToDec(){let a=parseIPv4($('ipv4').value);$('convOut').textContent=a?ipToInt(a):'Invalid IPv4'}
+/* IPv6 */
+function validIPv6(ip){ip=ip.trim().toLowerCase();if(ip.includes(':::'))return false;let parts=ip.split(':');return parts.length>=2&&parts.length<=8&&parts.every(p=>p===''||/^[0-9a-f]{1,4}$/.test(p))}
+function expandIPv6(){let ip=$('ipv6').value.trim();let out=expandIPv6Fn(ip);$('ipv6Out').textContent=out}
+function expandIPv6Fn(ip){if(!validIPv6(ip))return 'Invalid IPv6';let [l,r]=ip.split('::');let left=l?l.split(':'):[];let right=r?r.split(':'):[];let miss=8-left.length-right.length;if(miss<0)return 'Invalid';let full=[...left,...Array(miss).fill('0'),...right];return full.map(x=>x.padStart(4,'0')).join(':')}
+function analyzeIPv6(){let ip=$('ipv6').value;if(!validIPv6(ip)){$('ipv6Out').textContent='Invalid IPv6';return}let exp=expandIPv6Fn(ip);let low=ip.toLowerCase();let cls='Global Unicast';if(low==='::1'||exp.endsWith(':0001')&&exp.startsWith('0000:0000:0000:0000:0000:0000:0000:0001'))cls='Loopback';else if(/^fe[89ab]/.test(low))cls='Link-Local';else if(/^ff/.test(low))cls='Multicast';$('ipv6Out').textContent=`Valid: Yes\nExpanded: ${exp}\nClassification: ${cls}\nCompressed: ${ip}`;saveHist('IP','IPv6 '+ip,cls)}
+/* Subnet */
+function calcSubnet(){let ip=$('subIp').value;let cidr=+$('subCidr').value;let a=parseIPv4(ip);if(!a||cidr<0||cidr>32){$('subOut').textContent='Invalid input';return}let ipInt=ipToInt(a);let mask=maskFromCidr(cidr);let net=(ipInt&mask)>>>0;let broad=(net|(~mask>>>0))>>>0;let total=cidr===32?1:cidr===31?2:Math.pow(2,32-cidr);let usable=cidr===32?1:cidr===31?2:total-2;let first=cidr>=31?net:net+1;let last=cidr>=31?broad:broad-1;let wild=(~mask)>>>0;let out=`Network: ${intToIp(net)}/${cidr}\nBroadcast: ${intToIp(broad)}\nFirst Host: ${intToIp(first>>>0)}\nLast Host: ${intToIp(last>>>0)}\nTotal Addresses: ${total}\nUsable Hosts: ${usable}\nSubnet Mask: ${intToIp(mask)}\nMask Binary: ${mask.toString(2).padStart(32,'0')}\nWildcard: ${intToIp(wild)}\nClass: ${ipClass(a)}`;$('subOut').textContent=out;saveHist('SUBNET',`${ip}/${cidr}`,out)}
+function clearSubnet(){$('subIp').value='';$('subCidr').value='';$('subOut').textContent='Cleared'}
+/* Dashboard */
+async function refreshDash(){$('dashTime').textContent='Last update: '+new Date().toLocaleString();updateConn();fetchPublicIP();wifiInfo()}
+function updateConn(){let on=navigator.onLine;let c=navigator.connection||{};$('netPill').innerHTML=on?'<span class="ok">● Online</span>':'<span class="bad">● Offline</span>';$('connKv').innerHTML=`<b>Status</b><span>${on?'Online':'Offline'}</span><b>Type</b><span>${c.type||'Unknown (browser restriction)'}</span><b>Effective Type</b><span>${c.effectiveType||'Unknown'}</span><b>Downlink</b><span>${c.downlink?c.downlink+' Mb/s (estimated)':'Unknown'}</span><b>RTT</b><span>${c.rtt?c.rtt+' ms':'Unknown'}</span><b>Save Data</b><span>${c.saveData?'On':'Off / Unknown'}</span>`;$('health').textContent=on?'ONLINE':'OFFLINE';$('healthTxt').textContent=on?'Browser reports internet available. Run diagnostics for deeper checks.':'No internet according to browser.'}
+async function fetchPublicIP(){try{let r=await fetch('https://ipapi.co/json/');let j=await r.json();$('pubIp').textContent=j.ip||'Unavailable';$('pubInfo').textContent=`${j.city||''} ${j.country_name||''} • ${j.org||''} • ${j.version||''}`;$('dashKv').innerHTML=`<b>Public IPv4</b><span>${j.ip||'-'}</span><b>Public IPv6</b><span>${j.version==='IPv6'?j.ip:'Not reported by provider'}</span><b>Location</b><span>${j.city||'-'}, ${j.country_name||'-'}</span><b>ISP</b><span>${j.org||'-'}</span><b>Connection</b><span>${navigator.onLine?'Online':'Offline'}</span><b>DNS</b><span>Use DNS Toolkit (DoH)</span><b>Gateway</b><span>Not accessible from browser</span><b>Local IP</b><span>Not accessible from browser (WebRTC disabled for privacy)</span>`}catch(e){$('pubIp').textContent='Unavailable (offline / blocked)';$('pubInfo').textContent=e.message;$('dashKv').innerHTML=`<b>Status</b><span>Online features unavailable</span><b>Reason</b><span>${esc(e.message)}</span>`}}
+function wifiInfo(){let c=navigator.connection||{};$('wifiKv').innerHTML=`<b>Online</b><span>${navigator.onLine}</span><b>Connection Type</b><span>${c.type||'Unknown'}</span><b>SSID</b><span>Not accessible in standard browser</span><b>BSSID</b><span>Not accessible</span><b>Signal</b><span>Not accessible</span><b>Frequency</b><span>Not accessible</span><b>Quality</b><span>${c.effectiveType||'Unknown'}</span>`}
+function wifiFix(){let p=$('wifiProb').value;let m={ 'Cannot connect to WiFi':'1. Toggle WiFi off/on\n2. Forget network and reconnect\n3. Check password\n4. Move closer to router\n5. Reboot router 30s','WiFi connected but no internet':'1. Toggle airplane mode\n2. Check router internet light\n3. Reboot router\n4. Try another device\n5. Contact ISP if all devices fail','Slow WiFi':'1. Move closer\n2. Use 5GHz if available\n3. Disconnect unused devices\n4. Change router channel\n5. Run Speed Test in NEXTRON','Frequent disconnect':'1. Update router firmware\n2. Check overheating\n3. Reduce distance / obstacles\n4. Change channel\n5. Test with cable to isolate WiFi issue'};$('wifiFixOut').textContent=m[p]||m['Cannot connect to WiFi']}
+/* Diagnostics */
+async function runDiag(){let url=$('diagHost').value;let out=[];let bar=$('diagBar');bar.style.width='10%';let t0=performance.now();try{let r=await fetch(url,{mode:'no-cors',cache:'no-store'});let d=Math.round(performance.now()-t0);out.push(`Test: HTTP reachability (no-cors)\nStatus: Reachable / opaque response\nDuration: ${d} ms\nNote: Browser hides status code in no-cors mode.`)}catch(e){out.push(`Status: Failed\nError: ${e.message}`)}bar.style.width='60%';try{let dns=await fetch('https://cloudflare-dns.com/dns-query?name='+encodeURIComponent(new URL(url).hostname)+'&type=A',{headers:{accept:'application/dns-json'}});out.push(`DNS DoH: ${dns.ok?'OK':'Failed'} (${dns.status})`)}catch(e){out.push('DNS DoH: Failed '+e.message)}bar.style.width='100%';out.push('Timestamp: '+new Date().toISOString());$('diagOut').textContent=out.join('\n\n');saveHist('DIAG',url,out.join(' | '))}
+function checkOnline(){$('diagOut').textContent='navigator.onLine = '+navigator.onLine+'\nTime: '+new Date().toLocaleString()}
+function validateHosts(){let h=$('hostIn').value;let u=$('urlIn').value;let hostOk=/^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(h);let urlOk;try{new URL(u);urlOk=true}catch(e){urlOk=false}$('valOut').textContent=`Hostname: ${h}\nValid: ${hostOk}\n\nURL: ${u}\nValid: ${urlOk}`+(urlOk?`\nProtocol: ${new URL(u).protocol}\nHost: ${new URL(u).hostname}\nPath: ${new URL(u).pathname}`:'')}
+/* Speed */
+let speedCancel=false;
+async function speedTest(){speedCancel=false;$('speedBar').style.width='5%';let sizes=[100000,500000];let res=[];for(let s of sizes){if(speedCancel)break;let t0=performance.now();try{let r=await fetch('https://speed.cloudflare.com/__down?bytes='+s,{cache:'no-store'});let b=await r.arrayBuffer();let sec=(performance.now()-t0)/1000;let mbps=(b.byteLength*8/sec/1000000).toFixed(2);res.push(`Download sample ${s}: ${mbps} Mbps in ${Math.round(sec*1000)}ms`);$('speedBar').style.width=(30+res.length*30)+'%'}catch(e){res.push('Download failed: '+e.message)}}res.push('Upload: Browser cannot reliably measure upload to arbitrary endpoint without dedicated server. Marked as Unsupported.');$('speedOut').textContent=res.join('\n');saveHist('SPEED','Speed test',res.join(' | '));renderSpeedHist()}
+function cancelSpeed(){speedCancel=true;$('speedOut').textContent+='\nCancelled by user.'}
+async function latencyTest(){let times=[];for(let i=0;i<5;i++){let t0=performance.now();try{await fetch('https://www.google.com/generate_204',{mode:'no-cors',cache:'no-store'});times.push(Math.round(performance.now()-t0))}catch(e){times.push(null)}}let valid=times.filter(x=>x!==null);let avg=valid.length?Math.round(valid.reduce((a,b)=>a+b,0)/valid.length):null;$('latOut').textContent=`Samples: ${times.join(', ')} ms\nAverage: ${avg??'Failed'} ms\nNote: This is HTTP latency, not ICMP ping.`;saveHist('SPEED','Latency',String(avg))}
+function renderSpeedHist(){let h=JSON.parse(localStorage.getItem('nextron_hist')||'[]').filter(x=>x.cat==='SPEED');$('speedHist').innerHTML=h.slice(0,5).map(x=>`<div>${esc(x.time)} - ${esc(x.summary)}</div>`).join('')||'No speed history.'}
+/* DNS */
+async function dnsLookup(){let d=$('dnsDomain').value;let t=$('dnsType').value;try{let r=await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(d)}&type=${t}`,{headers:{accept:'application/dns-json'}});let j=await r.json();$('dnsOut').textContent=JSON.stringify(j,null,2);saveHist('DNS',`${d} ${t}`,JSON.stringify(j).slice(0,200))}catch(e){$('dnsOut').textContent='DNS lookup failed: '+e.message+'\nRequires internet.'}}
+/* Domain */
+function analyzeDomain(){let u=$('domUrl').value;try{let url=new URL(u);$('domOut').textContent=`Valid: Yes\nProtocol: ${url.protocol}\nHostname: ${url.hostname}\nExtension: ${url.hostname.split('.').pop()}\nPath: ${url.pathname}\nQuery: ${url.search}\nHash: ${url.hash}\nOrigin: ${url.origin}`}catch(e){$('domOut').textContent='Invalid URL: '+e.message}}
+async function checkSite(){let u=$('domUrl').value;let t0=performance.now();try{await fetch(u,{mode:'no-cors',cache:'no-store'});$('domOut').textContent+=`\n\nAvailability: Reachable (no-cors)\nDuration: ${Math.round(performance.now()-t0)} ms\nNote: Status/redirect not visible due to CORS.`}catch(e){$('domOut').textContent+=`\n\nAvailability: Failed\nError: ${e.message}`}}
+function urlEnc(){$('urlToolOut').textContent=encodeURIComponent($('urlText').value)}
+function urlDec(){try{$('urlToolOut').textContent=decodeURIComponent($('urlText').value)}catch(e){$('urlToolOut').textContent=e.message}}
+/* Security */
+async function secCheck(){let u=$('secUrl').value;try{let url=new URL(u);let https=url.protocol==='https:';$('secOut').textContent=`URL: ${u}\nHTTPS: ${https?'Yes':'No - insecure'}\nHost: ${url.hostname}\nChecklist:\n- Use HTTPS\n- Keep browser updated\n- Check certificate warnings\n- Avoid public WiFi for banking\n- Use DNS-over-HTTPS in browser settings\nNote: Headers/certificate details are limited by CORS.`}catch(e){$('secOut').textContent=e.message}}
+function secListFn(){$('secList').innerHTML=['Browser updated','HTTPS everywhere','Strong unique passwords + 2FA','Router admin password changed','WiFi WPA2/WPA3 enabled','Unknown networks avoided','Downloads scanned'].map(x=>`<div>• ${x}</div>`).join('')}
+/* Dev */
+function devRun(t){let v=$('devIn').value;let o='';if(t==='b64e')o=btoa(unescape(encodeURIComponent(v)));if(t==='b64d'){try{o=decodeURIComponent(escape(atob(v)))}catch(e){o=e.message}}if(t==='hex')o=[...v].map(c=>c.charCodeAt(0).toString(16).padStart(2,'0')).join(' ');if(t==='bin')o=[...v].map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');$('devOut').textContent=o}
+function jsonFmt(){try{$('jsonOut').textContent=JSON.stringify(JSON.parse($('jsonIn').value),null,2)}catch(e){$('jsonOut').textContent='Invalid JSON: '+e.message}}
+async function sha256Fn(){let buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode($('jsonIn').value));$('jsonOut').textContent=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+function uuidFn(){$('jsonOut').textContent=crypto.randomUUID()}
+function tsConv(){let n=+$('tsIn').value;$('tsOut').textContent=isNaN(n)?'Invalid timestamp':new Date(n*1000).toISOString()}
+function macVal(){let m=$('macIn').value;$('tsOut').textContent='Valid MAC: '+/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/.test(m)}
+function dictSearch(){let q=$('dictQ').value.toLowerCase();let d={subnet:'Subnet = network division using mask/CIDR.',dns:'DNS translates domain names to IP addresses.', 'http 404':'404 = resource not found.',cidr:'CIDR = classless inter-domain routing, e.g. /24 = 255.255.255.0',mac:'MAC = hardware address of network interface.',ipv4:'IPv4 = 32-bit address, e.g. 192.168.1.1',ipv6:'IPv6 = 128-bit address, successor to IPv4.'};let k=Object.keys(d).find(x=>q.includes(x));$('dictOut').textContent=k?d[k]:'Term not in offline dictionary. Try: subnet, dns, cidr, mac, ipv4, ipv6, http 404'}
+/* History */
+function renderHist(){let q=($('histQ').value||'').toLowerCase();let f=$('histF').value;let h=JSON.parse(localStorage.getItem('nextron_hist')||'[]');h=h.filter(x=>(!f||x.cat===f)&&(!q||JSON.stringify(x).toLowerCase().includes(q)));$('histList').innerHTML=h.map(x=>`<div class="card" style="margin-bottom:8px"><div class="row"><b>${esc(x.cat)}</b><span class="mut">${esc(x.time)}</span><button class="btn small dark" onclick="delHist(${x.id})">Delete</button></div><div>${esc(x.summary)}</div><pre>${esc(x.data)}</pre></div>`).join('')||'<div class="mut">No history.</div>';let r=JSON.parse(localStorage.getItem('nextron_hist')||'[]').slice(0,3);$('recent').innerHTML=r.map(x=>`<div>• ${esc(x.cat)} - ${esc(x.summary)} <span class="mut">${esc(x.time)}</span></div>`).join('')||'No history yet.'}
+function delHist(id){let h=JSON.parse(localStorage.getItem('nextron_hist')||'[]').filter(x=>x.id!==id);localStorage.setItem('nextron_hist',JSON.stringify(h));renderHist()}
+function clearHist(){if(confirm('Clear all history?')){localStorage.removeItem('nextron_hist');renderHist();toast('History cleared')}}
+function exportHist(){let h=localStorage.getItem('nextron_hist')||'[]';let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h],{type:'application/json'}));a.download='nextron-history.json';a.click()}
+function importHist(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let j=JSON.parse(r.result);if(!Array.isArray(j))throw 0;localStorage.setItem('nextron_hist',JSON.stringify(j));renderHist();toast('Imported')}catch(err){toast('Invalid JSON')}};r.readAsText(f)}
+/* Settings */
+function saveSettings(){let s={anim:$('setAnim').checked,compact:$('setCompact').checked,sound:$('setSound').checked};localStorage.setItem('nextron_settings',JSON.stringify(s));applySettings();$('setOut').textContent='Saved: '+JSON.stringify(s)}
+function applySettings(){let s=JSON.parse(localStorage.getItem('nextron_settings')||'{"anim":true}');document.body.classList.toggle('noanim',!s.anim);document.body.classList.toggle('compact',!!s.compact);$('setAnim').checked=s.anim!==false;$('setCompact').checked=!!s.compact}
+function resetSettings(){localStorage.removeItem('nextron_settings');applySettings();$('setOut').textContent='Settings reset.'}
+function storageInfo(){try{let used=JSON.stringify(localStorage).length;$('storageOut').textContent=`localStorage used: ${used} bytes\nKeys: ${Object.keys(localStorage).join(', ')||'none'}`}catch(e){$('storageOut').textContent='localStorage unavailable: '+e.message}}
+/* Lookup */
+async function lookupIP(){let q=$('lookup').value;try{let r=await fetch('https://ipapi.co/'+encodeURIComponent(q)+'/json/');let j=await r.json();$('lookupOut').textContent=JSON.stringify(j,null,2);saveHist('IP','Lookup '+q,j.ip||q)}catch(e){$('lookupOut').textContent='Lookup failed: '+e.message}}
+/* CIDR table */
+(function(){let t='<tr><th>CIDR</th><th>Mask</th><th>Hosts</th></tr>';[8,16,24,25,26,27,28,29,30,31,32].forEach(c=>{let m=maskFromCidr(c);let hosts=c===32?1:c===31?2:Math.pow(2,32-c)-2;t+=`<tr><td>/${c}</td><td>${intToIp(m)}</td><td>${hosts}</td></tr>`});$('cidrTable').innerHTML=t})();
+window.addEventListener('online',updateConn);window.addEventListener('offline',updateConn);
+applySettings();refreshDash();renderHist();secListFn();renderSpeedHist();
+</script>
+</body>
+</html>
